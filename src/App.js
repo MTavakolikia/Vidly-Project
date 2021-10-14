@@ -10,7 +10,7 @@ class App extends Component {
     }
   }
   render() { 
-    return <div>
+    return <div className="container">
           <Movies />
     </div>;
   }
