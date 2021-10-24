@@ -5,6 +5,7 @@ import Pagination from './common/Pagination';
 import ListGroup from './common/listGroup';
 import { Paginate } from '../Utils/Paginate';
 import MoviesTable from './moviesTable';
+import _ from 'lodash';
 class Movies extends Component {
         constructor(){
           super();
@@ -12,12 +13,13 @@ class Movies extends Component {
               Movies:[],
               genre:[],
               pageSize:4,
-              currentPage:1
+              currentPage:1,
+              sortColumn:{path:'title',order:'asc'}
           }
         }
         
   componentDidMount(){
-    const genre=[{name:"All Genres"},...getGenres()]
+    const genre=[{_id:"",name:"All Genres"},...getGenres()]
     this.setState({
       Movies:getMovies(),
       genre
@@ -36,6 +38,7 @@ class Movies extends Component {
     Movies[index]={...Movies[index]};
     Movies[index].liked= !Movies[index].liked;
     this.setState({Movies});
+    console.log(movie);
   }
   handlePageChange = page => {
 this.setState({currentPage:page})
@@ -46,15 +49,21 @@ this.setState({
   currentPage:1
 })
   }
+  handleSort= sortColumn => {
+    this.setState({
+      sortColumn
+    })
+  }
     render() { 
       
         const {length:count}= this.state.Movies;
-        const {pageSize,currentPage,Movies:allMovies,genre,selectedGenre}=this.state;
+        const {pageSize,currentPage,Movies:allMovies,genre,selectedGenre,sortColumn}=this.state;
        
         if(count === 0) return <h4>There are no movies in database</h4>
         const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id === selectedGenre._id)
         : allMovies;
-        const movies = Paginate(filtered,currentPage,pageSize);
+        const sorted=_.orderBy(filtered,[sortColumn.path],[sortColumn.order])
+        const movies = Paginate(sorted,currentPage,pageSize);
         return (
           <div className="row">
         <div className="col-2">
@@ -68,7 +77,9 @@ this.setState({
         <h4>Showing {filtered.length} movies in the database.</h4>
             <MoviesTable 
             movies={movies}
+            sortColumn={sortColumn}
             onLike={this.handleLike}
+            onSort={this.handleSort}
             onDelete={this.handleDelete}
             />
       <Pagination 
