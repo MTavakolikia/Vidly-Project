@@ -54,16 +54,22 @@ this.setState({
       sortColumn
     })
   }
-    render() { 
-      
-        const {length:count}= this.state.Movies;
-        const {pageSize,currentPage,Movies:allMovies,genre,selectedGenre,sortColumn}=this.state;
-       
-        if(count === 0) return <h4>There are no movies in database</h4>
-        const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id === selectedGenre._id)
+  getPageData= ()=> {
+    const {pageSize,currentPage,Movies:allMovies,selectedGenre,sortColumn}=this.state;
+    const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id === selectedGenre._id)
         : allMovies;
         const sorted=_.orderBy(filtered,[sortColumn.path],[sortColumn.order])
         const movies = Paginate(sorted,currentPage,pageSize);
+
+        return {totalCount: filtered.length,data: movies}
+  }
+    render() { 
+      
+        const {length:count}= this.state.Movies;
+        const {pageSize,currentPage,genre,sortColumn}=this.state;
+       
+        if(count === 0) return <h4>There are no movies in database</h4>
+        const {totalCount , data: movies}=this.getPageData();
         return (
           <div className="row">
         <div className="col-2">
@@ -74,7 +80,7 @@ this.setState({
           />
         </div>
         <div className="col-10">
-        <h4>Showing {filtered.length} movies in the database.</h4>
+        <h4>Showing {totalCount} movies in the database.</h4>
             <MoviesTable 
             movies={movies}
             sortColumn={sortColumn}
@@ -83,7 +89,7 @@ this.setState({
             onDelete={this.handleDelete}
             />
       <Pagination 
-       itemsCount={filtered.length}
+       itemsCount={totalCount}
        pageSize={pageSize}
        onPageChange={this.handlePageChange}
        currentPage={currentPage}
